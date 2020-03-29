@@ -5,7 +5,7 @@ A tool for building a Tensorflow dataset from a set of images.
 ```
 python images_to_tfrecords \
     -data_root "images" \
-    -output_dir "data/datasets/10_partitions" \
+    -output_dir "tfrecords" \
     -n_splits 10 \ # OPTIONAL
     -shuffle \ # OPTIONAL
     -stratify \ # OPTIONAL
