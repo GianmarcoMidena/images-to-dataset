@@ -69,3 +69,4 @@ for image, label in parsed_image_dataset.take(5):
 - Pillow 6.2.1
 - Pandas 1.0.1
 - Numpy 1.18.1
+- Matplotlib 3.2.0
