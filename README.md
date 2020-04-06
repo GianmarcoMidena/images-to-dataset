@@ -1,7 +1,7 @@
 # Images to tfrecords
 A tool for building a Tensorflow dataset from a set of images.
 
-## Usage Example
+## Usage example
 ```
 python images_to_tfrecords \
     -data_root "images" \
@@ -18,7 +18,7 @@ that contains a subdirectory of images for each image label;
 - `shuffle` random samples the images (without replacement);
 - `stratify` keeps the same proportion of images by label for each partition.
 
-## TFRecords Reading Example
+## TFRecords reading example
 ```
 import os
 from glob import glob
