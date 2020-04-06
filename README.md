@@ -50,7 +50,7 @@ def _parse_image_function(example_proto):
     label = tf.squeeze(features['label'])
     return image, label
 
-tfrecord_file_paths = glob(os.path.join('images', 'tfrecords', 'data*.tfrecords'))
+tfrecord_file_paths = glob(os.path.join('tfrecords', 'data*.tfrecords'))
 raw_image_dataset = tf.data.TFRecordDataset(tfrecord_file_paths)
 parsed_image_dataset = raw_image_dataset.map(_parse_image_function)
 
