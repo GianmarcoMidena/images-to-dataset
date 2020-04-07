@@ -5,7 +5,7 @@ from extract_tfrecords import extract_tfrecords
 logging.basicConfig(level=logging.INFO)
 parser = argparse.ArgumentParser()
 parser.add_argument("-data_root", required=True)
-parser.add_argument("-output_dir", required=True, help="path to the output file")
+parser.add_argument("-output_dir", required=True, help="path to the output directory")
 parser.add_argument("-n_splits", type=int, required=False, default=1)
 parser.add_argument("-shuffle", action="store_true")
 parser.add_argument("-stratify", action="store_true")
