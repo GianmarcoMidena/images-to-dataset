@@ -1,11 +1,12 @@
-# Images to tfrecords
-A tool for building a Tensorflow dataset from a set of images.
+# Images to dataset
+A tool for building a CSV or a Tensorflow dataset from a set of images.
 
 ## Usage example
 ```
 python images_to_dataset \
     -input_data_root "images" \
     -output_dir "dataset" \
+    -output_format "tfrecords" \
     -n_splits 10 \ # OPTIONAL
     -shuffle \ # OPTIONAL
     -stratify \ # OPTIONAL
@@ -18,6 +19,7 @@ python images_to_dataset \
 where: 
 - `input_data_root` is the path of a root directory 
 that contains a subdirectory of images for each image label;
+- `output_format`: "tfrecords" or "csv"
 - `n_splits` is the number of partitions in which the dataset has to be splitted;
 - `shuffle` random samples the images (without replacement);
 - `stratify` keeps the same proportion of images by label for each partition;

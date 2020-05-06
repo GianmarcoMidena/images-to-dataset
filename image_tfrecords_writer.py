@@ -8,9 +8,6 @@ from tfrecords_writer import TFRecordsWriter
 
 
 class ImageTFRecordsWriter(TFRecordsWriter):
-    def __init__(self, n_splits: int, output_dir: Path):
-        super().__init__(n_splits, output_dir)
-
     def _make_example(self, path, label):
         image = Image.open(path)
         return self._serialize_example(image, label)
