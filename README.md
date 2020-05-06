@@ -3,20 +3,26 @@ A tool for building a Tensorflow dataset from a set of images.
 
 ## Usage example
 ```
-python images_to_tfrecords \
-    -data_root "images" \
-    -output_dir "tfrecords" \
+python images_to_dataset \
+    -input_data_root "images" \
+    -output_dir "dataset" \
     -n_splits 10 \ # OPTIONAL
     -shuffle \ # OPTIONAL
     -stratify \ # OPTIONAL
+    -group "group" \ # OPTIONAL
+    -metadata "metadata.csv" \ # OPTIONAL
+    -path_column "path" \ # OPTIONAL
+    -label_column "label" \ # OPTIONAL
     -seed 3 # OPTIONAL
 ```
 where: 
-- `data_root` is the path of a root directory 
+- `input_data_root` is the path of a root directory 
 that contains a subdirectory of images for each image label;
 - `n_splits` is the number of partitions in which the dataset has to be splitted;
 - `shuffle` random samples the images (without replacement);
-- `stratify` keeps the same proportion of images by label for each partition.
+- `stratify` keeps the same proportion of images by label for each partition;
+- `group` keeps the samples belonging to the same group in the same partition;
+- `metadata` is the path to a CSV file that can specify `{path_column}`, `{label_column}`, and `{group}` information.
 
 ## TFRecords reading example
 ```
