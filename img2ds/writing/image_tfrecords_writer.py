@@ -2,7 +2,7 @@ import tensorflow as tf
 import PIL
 from PIL import Image
 
-from images_to_dataset.writing import TFRecordsWriter
+from img2ds.writing import TFRecordsWriter
 
 
 class ImageTFRecordsWriter(TFRecordsWriter):

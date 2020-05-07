@@ -6,13 +6,13 @@ from sklearn.model_selection import KFold, StratifiedKFold, GroupKFold
 import numpy as np
 import pandas as pd
 
-from images_to_dataset.building import utils
-from images_to_dataset.splitting import StratifiedGroupKFold
+from img2ds.building import utils
+from img2ds.splitting import StratifiedGroupKFold
 
 
 class DatasetBuilder:
     def __init__(self, data_root: Path, n_splits: int, with_shuffle: bool, with_stratify: bool, group: str,
-                 metadata: Path, path_column: str, label_column: str, seed: int = None):
+                 metadata: Path, path_column: str = 'path', label_column: str = 'label', seed: int = None):
         self._data_root = data_root
         self._n_splits = n_splits
         self._with_shuffle = with_shuffle

@@ -2,7 +2,7 @@ from pathlib import Path
 
 from PIL import Image
 
-from images_to_dataset.building import DatasetBuilder
+from img2ds.building import DatasetBuilder
 
 
 class ImageDatasetBuilder(DatasetBuilder):
