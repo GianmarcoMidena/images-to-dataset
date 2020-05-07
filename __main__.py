@@ -10,6 +10,7 @@ logging.basicConfig(format='%(asctime)s %(message)s', level=logging.INFO)
 parser = argparse.ArgumentParser()
 parser.add_argument("-input_data_root", type=Path, required=False)
 parser.add_argument("-output_dir", type=Path, required=True, help="path to the output directory")
+parser.add_argument("-output_file_name", type=str, default="data")
 parser.add_argument("-output_format", type=str, choices=['csv', 'tfrecords'], required=True)
 parser.add_argument("-n_splits", type=int, required=False, default=1)
 parser.add_argument("-shuffle", action="store_true")
@@ -29,6 +30,8 @@ partitions = ImageDatasetBuilder(data_root=args.input_data_root, n_splits=n_spli
                                  seed=args.seed).build()
 
 if args.output_format == 'csv':
-    CSVWriter(n_splits=n_splits, output_dir=args.output_dir).write(partitions)
+    CSVWriter(n_splits=n_splits, output_dir=args.output_dir, output_file_name=args.output_file_name)\
+        .write(partitions)
 else:
-    ImageTFRecordsWriter(n_splits=n_splits, output_dir=args.output_dir).write(partitions)
+    ImageTFRecordsWriter(n_splits=n_splits, output_dir=args.output_dir, output_file_name=args.output_file_name)\
+        .write(partitions)

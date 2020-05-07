@@ -20,6 +20,7 @@ A tool for building a CSV or a Tensorflow dataset from a set of images.
 python images_to_dataset \
     -input_data_root "images" \
     -output_dir "dataset" \
+    -output_file_name "data" \
     -output_format "tfrecords" \
     -n_splits 10 \ # OPTIONAL
     -shuffle \ # OPTIONAL
