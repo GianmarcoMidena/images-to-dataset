@@ -1,6 +1,20 @@
 # Images to dataset
 A tool for building a CSV or a Tensorflow dataset from a set of images.
 
+## Installation
+1. Install `python3`, `python3-pip` and `wheel`;
+
+2. Move into the root folder of the project;
+
+3. Compile the package:
+    ```
+    python3 setup.py bdist_wheel
+    ```
+4. Install on your local machine:
+    ```
+    pip3 install -U dist/images_to_dataset-*-py3-none-any.whl
+    ```
+
 ## Usage example
 ```
 python images_to_dataset \
