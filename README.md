@@ -26,6 +26,8 @@ that contains a subdirectory of images for each image label;
 - `group` keeps the samples belonging to the same group in the same partition;
 - `metadata` is the path to a CSV file that can specify `{path_column}`, `{label_column}`, and `{group}` information.
 
+The `CSV` output presents the `path` and `label` columns.
+
 ## TFRecords reading example
 ```
 import os
