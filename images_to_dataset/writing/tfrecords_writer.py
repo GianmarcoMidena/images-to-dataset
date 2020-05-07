@@ -3,7 +3,7 @@ from pathlib import Path
 
 import tensorflow as tf
 
-from dataset_writer import DatasetWriter
+from images_to_dataset.writing import DatasetWriter
 
 
 class TFRecordsWriter(DatasetWriter):

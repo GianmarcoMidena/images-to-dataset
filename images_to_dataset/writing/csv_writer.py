@@ -1,7 +1,7 @@
 from pathlib import Path
 import pandas as pd
 
-from dataset_writer import DatasetWriter
+from images_to_dataset.writing import DatasetWriter
 
 
 class CSVWriter(DatasetWriter):

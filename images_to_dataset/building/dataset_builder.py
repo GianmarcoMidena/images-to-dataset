@@ -6,8 +6,8 @@ from sklearn.model_selection import KFold, StratifiedKFold, GroupKFold
 import numpy as np
 import pandas as pd
 
-import utils
-from stratified_group_k_fold import StratifiedGroupKFold
+from images_to_dataset.building import utils
+from images_to_dataset.splitting import StratifiedGroupKFold
 
 
 class DatasetBuilder:

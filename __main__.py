@@ -2,9 +2,9 @@ import argparse
 import logging
 from pathlib import Path
 
-from csv_writer import CSVWriter
-from image_dataset_builder import ImageDatasetBuilder
-from image_tfrecords_writer import ImageTFRecordsWriter
+from images_to_dataset.building import ImageDatasetBuilder
+from images_to_dataset.writing import CSVWriter
+from images_to_dataset.writing import ImageTFRecordsWriter
 
 logging.basicConfig(format='%(asctime)s %(message)s', level=logging.INFO)
 parser = argparse.ArgumentParser()

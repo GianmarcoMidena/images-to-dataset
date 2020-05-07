@@ -1,10 +1,8 @@
-from pathlib import Path
-
 import tensorflow as tf
 import PIL
 from PIL import Image
 
-from tfrecords_writer import TFRecordsWriter
+from images_to_dataset.writing import TFRecordsWriter
 
 
 class ImageTFRecordsWriter(TFRecordsWriter):

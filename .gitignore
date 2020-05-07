@@ -2,3 +2,6 @@
 __pycache__
 *.ipynb
 *.tfrecords
+build
+dist
+*.egg-info
