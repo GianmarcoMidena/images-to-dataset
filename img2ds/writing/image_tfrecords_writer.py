@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import tensorflow as tf
 import PIL
 from PIL import Image
@@ -6,11 +8,12 @@ from img2ds.writing import TFRecordsWriter
 
 
 class ImageTFRecordsWriter(TFRecordsWriter):
-    def _make_example(self, path, label):
+    def _make_example(self, path: Path, label: str):
         image = Image.open(path)
-        return self._serialize_example(image, label)
+        id = path.stem
+        return self._serialize_example(id, image, label)
 
-    def _serialize_example(self, image: PIL.Image.Image, label: str) -> str:
+    def _serialize_example(self, id: str, image: PIL.Image.Image, label: str) -> str:
         """
          Creates a tf.Example message ready to be written to a file.
          """
@@ -25,7 +28,8 @@ class ImageTFRecordsWriter(TFRecordsWriter):
             'width': self._int64_feature(width),
             'depth': self._int64_feature(depth),
             'label': self._bytes_feature(tf.compat.as_bytes(label)),
-            'image_raw': self._bytes_feature(image_bytes)
+            'image_raw': self._bytes_feature(image_bytes),
+            'id': self._bytes_feature(tf.compat.as_bytes(id))
         }
 
         # Create a Features message using tf.train.Example.

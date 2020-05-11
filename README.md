@@ -56,7 +56,8 @@ image_feature_description = {
     'width': tf.io.FixedLenFeature([], tf.int64),
     'depth': tf.io.FixedLenFeature([], tf.int64),
     'label': tf.io.FixedLenFeature(shape=1, dtype=tf.string, default_value=''),
-    'image_raw': tf.io.FixedLenFeature([], tf.string)
+    'image_raw': tf.io.FixedLenFeature([], tf.string),
+    'id': tf.io.FixedLenFeature(shape=1, dtype=tf.string, default_value='')
 }
 
 def decode_image(image, width, height, depth):
