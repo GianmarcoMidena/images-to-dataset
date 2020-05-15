@@ -11,8 +11,9 @@ from img2ds.splitting import StratifiedGroupKFold
 
 
 class DatasetBuilder:
-    def __init__(self, data_root: Path, n_splits: int, with_shuffle: bool, with_stratify: bool, group: str,
-                 metadata: Path, path_column: str = 'path', label_column: str = 'label', seed: int = None):
+    def __init__(self, n_splits: int, with_shuffle: bool, with_stratify: bool, group: str,
+                 path_column: str = 'path', label_column: str = 'label',
+                 data_root: Path = None, metadata: Path = None, seed: int = None):
         self._data_root = data_root
         self._n_splits = n_splits
         self._with_shuffle = with_shuffle
