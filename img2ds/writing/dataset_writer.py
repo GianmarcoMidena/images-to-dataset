@@ -1,4 +1,3 @@
-import logging
 from abc import abstractmethod, ABC
 from pathlib import Path
 
@@ -23,15 +22,6 @@ class DatasetWriter(ABC):
                 self._write_partition(dataset_part=dataset, output_path=output_path)
 
     def _write_partition(self, dataset_part, output_path: Path, part_id: str = None):
-        examples_counter = 0
-        for path, label in dataset_part:
-            self._write_example(path, label)
-            examples_counter += 1
-        logging.info(f"{f'partition {part_id}: ' if part_id else ''}"
-                     f"{examples_counter} examples have been written.")
-
-    @abstractmethod
-    def _write_example(self, path, label):
         ...
 
     @abstractmethod

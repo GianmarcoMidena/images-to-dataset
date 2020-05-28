@@ -4,13 +4,13 @@ import tensorflow as tf
 import PIL
 from PIL import Image
 
-from img2ds.writing import TFRecordsWriter
+from img2ds.writing import feature_utils as utils
+from img2ds.writing.simple_tfrecords_writer import SimpleTFRecordsWriter
 
 
-class ImageTFRecordsWriter(TFRecordsWriter):
-    def _make_example(self, path: Path, label: str):
+class ImageTFRecordsWriter(SimpleTFRecordsWriter):
+    def _make_example(self, id: str, path: Path, label: str):
         image = Image.open(path)
-        id = path.stem
         return self._serialize_example(id, image, label)
 
     def _serialize_example(self, id: str, image: PIL.Image.Image, label: str) -> str:
@@ -24,24 +24,14 @@ class ImageTFRecordsWriter(TFRecordsWriter):
         depth = len(image.getbands())
         image_bytes = image.tobytes()
         feature = {
-            'height': self._int64_feature(height),
-            'width': self._int64_feature(width),
-            'depth': self._int64_feature(depth),
-            'label': self._bytes_feature(tf.compat.as_bytes(label)),
-            'image_raw': self._bytes_feature(image_bytes),
-            'id': self._bytes_feature(tf.compat.as_bytes(id))
+            'id': utils.bytes_feature(tf.compat.as_bytes(id)),
+            'label': utils.bytes_feature(tf.compat.as_bytes(label)),
+            'image_raw': utils.bytes_feature(image_bytes),
+            'height': utils.int64_feature(height),
+            'width': utils.int64_feature(width),
+            'depth': utils.int64_feature(depth),
         }
 
         # Create a Features message using tf.train.Example.
         example_proto = tf.train.Example(features=tf.train.Features(feature=feature))
         return example_proto.SerializeToString()
-
-    @staticmethod
-    def _bytes_feature(value):
-        """Returns a bytes_list from a string / byte."""
-        return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
-
-    @staticmethod
-    def _int64_feature(value):
-        """Returns an int64_list from a bool / enum / int / uint."""
-        return tf.train.Feature(int64_list=tf.train.Int64List(value=[value]))

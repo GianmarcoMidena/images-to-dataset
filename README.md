@@ -26,7 +26,9 @@ python images_to_dataset \
     -shuffle \ # OPTIONAL
     -stratify \ # OPTIONAL
     -group "group" \ # OPTIONAL
+    -sequence \ # OPTIONAL
     -metadata "metadata.csv" \ # OPTIONAL
+    -sample_id "sample_id" \ # OPTIONAL
     -path_column "path" \ # OPTIONAL
     -label_column "label" \ # OPTIONAL
     -seed 3 # OPTIONAL
@@ -39,7 +41,8 @@ that contains a subdirectory of images for each image label;
 - `shuffle` random samples the images (without replacement);
 - `stratify` keeps the same proportion of images by label for each partition;
 - `group` keeps the samples belonging to the same group in the same partition;
-- `metadata` is the path to a CSV file that can specify `{path_column}`, `{label_column}`, and `{group}` information.
+- `sequence` groups the images belonging to the same sample in the same record;
+- `metadata` is the path to a CSV file that can specify `{sample_id}`, `{path_column}`, `{label_column}`, and `{group}` information.
 
 The `CSV` output presents the `path` and `label` columns.
 
@@ -51,13 +54,13 @@ import tensorflow as tf
 from matplotlib import pyplot as plt
 
 # Create a dictionary describing the features.
-image_feature_description = {
+feature_description = {
+    'id': tf.io.FixedLenFeature(shape=1, dtype=tf.string, default_value=''),
+    'label': tf.io.FixedLenFeature(shape=1, dtype=tf.string, default_value=''),
+    'image_raw': tf.io.FixedLenFeature([], tf.string),
     'height': tf.io.FixedLenFeature([], tf.int64),
     'width': tf.io.FixedLenFeature([], tf.int64),
     'depth': tf.io.FixedLenFeature([], tf.int64),
-    'label': tf.io.FixedLenFeature(shape=1, dtype=tf.string, default_value=''),
-    'image_raw': tf.io.FixedLenFeature([], tf.string),
-    'id': tf.io.FixedLenFeature(shape=1, dtype=tf.string, default_value='')
 }
 
 def decode_image(image, width, height, depth):
@@ -66,9 +69,9 @@ def decode_image(image, width, height, depth):
     image = tf.image.convert_image_dtype(image, tf.float32)
     return image
 
-def _parse_image_function(example_proto):
+def _parse_image_function(example):
     # Parse the input tf.Example proto using the dictionary above.
-    features = tf.io.parse_single_example(example_proto, image_feature_description)
+    features = tf.io.parse_single_example(example, feature_description)
     image = decode_image(features['image_raw'], 
                          width=features['width'], 
                          height=features['height'], 
@@ -81,11 +84,68 @@ raw_image_dataset = tf.data.TFRecordDataset(tfrecord_file_paths)
 parsed_image_dataset = raw_image_dataset.map(_parse_image_function)
 
 for image, label in parsed_image_dataset.take(5):
-  image = image.numpy()
-  label = label.numpy().decode("utf-8")
-  plt.figure()
-  plt.imshow(image)
-  plt.title(f'"{label}" sample')
+    image = image.numpy()
+    label = label.numpy().decode("utf-8")
+    plt.figure()
+    plt.imshow(image)
+    plt.title(f'"{label}" sample')
+```
+
+## Sequential TFRecords reading example
+```
+import os
+from glob import glob
+import tensorflow as tf
+from matplotlib import pyplot as plt
+
+# Create a dictionary describing the features.
+context_features_description = {
+    'id': tf.io.FixedLenFeature(shape=1, dtype=tf.string, default_value=''),
+    'label': tf.io.FixedLenFeature(shape=1, dtype=tf.string, default_value=''),
+}
+
+sequential_features_description = {
+    'height': tf.io.FixedLenSequenceFeature([], tf.int64),
+    'width': tf.io.FixedLenSequenceFeature([], tf.int64),
+    'depth': tf.io.FixedLenSequenceFeature([], tf.int64),
+    'image_raw': tf.io.FixedLenSequenceFeature([], tf.string),
+}
+
+# For example we want a final image resolution of 500x500
+TARGET_HEIGHT, TARGET_WIDTH = 500, 500
+
+def decode_image(image, width, height, depth):
+    image = tf.io.decode_raw(image, out_type=tf.uint8)
+    image = tf.reshape(image, shape=[height, width, depth])
+    image = tf.image.convert_image_dtype(image, tf.float32)
+    image = tf.image.resize_with_crop_or_pad(image, TARGET_HEIGHT, TARGET_WIDTH)
+    return image
+
+def _parse_sequence_function(example):
+    context_features, sequential_features = \
+        tf.io.parse_single_sequence_example(example, context_features=context_features_description, 
+                                            sequence_features=sequential_features_description)
+
+    sequence_len = tf.shape(sequential_features['image_raw'])[0]
+    images = tf.map_fn(lambda i: decode_image(sequential_features['image_raw'][i], 
+                                              width=sequential_features['width'][i], 
+                                              height=sequential_features['height'][i], 
+                                              depth=sequential_features['depth'][i]),
+                       elems=tf.range(sequence_len), dtype=tf.float32)
+
+    label = tf.squeeze(context_features['label'])
+    return images, label
+
+tfrecord_file_paths = glob(os.path.join('tfrecords', 'data*.tfrecords'))
+raw_image_dataset = tf.data.TFRecordDataset(tfrecord_file_paths)
+parsed_seq_image_dataset = raw_image_dataset.map(_parse_sequence_function)
+
+for i, (image, label) in enumerate(parsed_seq_image_dataset.take(5)):
+    label = label.numpy().decode('UTF-8')
+    for j in range(image.shape[0]):
+        plt.figure()
+        plt.imshow(image[j])
+        plt.title(f'"{label}" example {i} part {j}')
 ```
 
 ## Dependencies
