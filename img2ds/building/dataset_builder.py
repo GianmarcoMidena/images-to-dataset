@@ -14,8 +14,7 @@ from img2ds.splitting import StratifiedGroupKFold
 class DatasetBuilder:
     def __init__(self, n_splits: int, with_shuffle: bool, with_stratify: bool, group: str,
                  path_column: str = 'path', label_column: str = 'label', data_root: Path = None, metadata: Path = None,
-                 sequence: bool = False, sample_id: str = None,
-                 seed: int = None):
+                 sequence_or_grid: bool = False, sample_id: str = None, seed: int = None):
         self._data_root = data_root
         self._n_splits = n_splits
         self._with_shuffle = with_shuffle
@@ -24,7 +23,7 @@ class DatasetBuilder:
         self._metadata = metadata
         self._path_column = path_column
         self._label_column = label_column
-        self._sequence = sequence
+        self._sequence_or_grid = sequence_or_grid
         self._sample_id = sample_id
         self._seed = seed
 
@@ -67,7 +66,7 @@ class DatasetBuilder:
                             {self._path_column: file_path, self._label_column: label}, ignore_index=True, sort=False)
 
         if paths_labels_groups is not None:
-            if self._sequence:
+            if self._sequence_or_grid:
                 agg = {self._path_column: list, self._label_column: self._mode}
                 if self._group and self._group in paths_labels_groups:
                     agg[self._group] = self._mode

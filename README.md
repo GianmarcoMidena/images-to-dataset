@@ -27,6 +27,7 @@ python images_to_dataset \
     -stratify \ # OPTIONAL
     -group "group" \ # OPTIONAL
     -sequence \ # OPTIONAL
+    -grid \ # OPTIONAL
     -metadata "metadata.csv" \ # OPTIONAL
     -sample_id "sample_id" \ # OPTIONAL
     -path_column "path" \ # OPTIONAL
@@ -42,6 +43,7 @@ that contains a subdirectory of images for each image label;
 - `stratify` keeps the same proportion of images by label for each partition;
 - `group` keeps the samples belonging to the same group in the same partition;
 - `sequence` groups the images belonging to the same sample in the same record;
+- `grid` groups the images belonging to the same sample in the same record, keeping a grid arrangement;
 - `metadata` is the path to a CSV file that can specify `{sample_id}`, `{path_column}`, `{label_column}`, and `{group}` information.
 
 The `CSV` output presents the `path` and `label` columns.
