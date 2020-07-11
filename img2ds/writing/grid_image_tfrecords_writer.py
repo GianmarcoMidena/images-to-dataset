@@ -9,10 +9,10 @@ from img2ds.writing import feature_utils as utils, SequenceTFRecordsWriter
 
 
 class GridImageTFRecordsWriter(SequenceTFRecordsWriter):
-    def _make_example(self, id: str, paths: List[Path], label: str):
-        return self._serialize_example(id, paths, label)
+    def _make_example(self, id: str, paths: List[Path], label: str, **kwargs):
+        return self._serialize_example(id, paths, label, **kwargs)
 
-    def _serialize_example(self, id: str, paths: List[Path], label: str) -> str:
+    def _serialize_example(self, id: str, paths: List[Path], label: str, **kwargs) -> str:
         """
          Creates a tf.Example message ready to be written to a file.
          """
@@ -40,6 +40,14 @@ class GridImageTFRecordsWriter(SequenceTFRecordsWriter):
             'n_cells_per_row': utils.int64_feature(n_cells_per_row),
             'n_cells_per_col': utils.int64_feature(n_cells_per_col),
         }
+
+        for k, v in kwargs.items():
+            if isinstance(v, int) or isinstance(v, bool):
+                context[k] = utils.int64_feature(v)
+            elif isinstance(v, str):
+                context[k] = utils.bytes_feature(tf.compat.as_bytes(v))
+            elif isinstance(v, float):
+                context[k] = utils.float_feature(v)
 
         feature_list = {
             'row_idx': utils.int64_feature_list(row_indices),

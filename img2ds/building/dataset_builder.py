@@ -1,11 +1,11 @@
 import logging
 from pathlib import Path
-from typing import Tuple, List, Union
+from typing import Tuple, List
 
-from sklearn.model_selection import KFold, StratifiedKFold, GroupKFold
 import numpy as np
 import pandas as pd
 import scipy.stats
+from sklearn.model_selection import KFold, StratifiedKFold, GroupKFold
 
 from img2ds.building import utils
 from img2ds.splitting import StratifiedGroupKFold
@@ -14,7 +14,8 @@ from img2ds.splitting import StratifiedGroupKFold
 class DatasetBuilder:
     def __init__(self, n_splits: int, with_shuffle: bool, with_stratify: bool, group: str,
                  path_column: str = 'path', label_column: str = 'label', data_root: Path = None, metadata: Path = None,
-                 sequence_or_grid: bool = False, sample_id: str = None, seed: int = None):
+                 sequence_or_grid: bool = False, sample_id: str = None, additional_columns: List[str] = None,
+                 seed: int = None):
         self._data_root = data_root
         self._n_splits = n_splits
         self._with_shuffle = with_shuffle
@@ -25,24 +26,21 @@ class DatasetBuilder:
         self._label_column = label_column
         self._sequence_or_grid = sequence_or_grid
         self._sample_id = sample_id
+        self._additional_columns = additional_columns
         self._seed = seed
 
     def build(self):
-        ids, paths, labels, groups = self._extract_paths_labels_groups()
-        n_examples = len(paths)
+        examples, groups = self._extract_examples()
+        n_examples = examples.shape[0]
         logging.info(f"{n_examples} examples have been found.")
         if n_examples > 0:
-            return self._iter_dataset(ids, paths, labels, groups)
+            return self._iter_dataset(examples, groups)
         return []
 
-    def _extract_paths_labels_groups(self) \
-            -> Tuple[List[str], Union[List[Path], List[List[Path]]], List[str], List[int]]:
-        ids = []
-        file_paths = []
-        labels = []
-        groups = []
-        paths_labels_groups = None
+    def _extract_examples(self) -> Tuple[pd.DataFrame, List[int]]:
         metadata = None
+        examples = None
+        groups = []
 
         if self._metadata is not None:
             metadata = pd.read_csv(self._metadata)
@@ -52,67 +50,66 @@ class DatasetBuilder:
                     path_existence = metadata[self._path_column].apply(Path.exists)
                     metadata = metadata.loc[path_existence]
                     metadata[self._label_column] = metadata[self._label_column].apply(str)
-                    paths_labels_groups = metadata[[self._path_column, self._label_column]]
+                    examples = metadata[[self._path_column, self._label_column]]
                     if self._sample_id:
-                        paths_labels_groups[self._sample_id] = metadata[self._sample_id]
+                        examples[self._sample_id] = metadata[self._sample_id]
+                    if self._additional_columns and (len(self._additional_columns) > 0):
+                        examples[self._additional_columns] = metadata[self._additional_columns]
 
-        if paths_labels_groups is None and self._data_root:
-            paths_labels_groups = pd.DataFrame()
+        if examples is None and self._data_root:
+            examples = pd.DataFrame()
             for class_folder in utils.iter_folders(self._data_root):
                 label = class_folder.name
                 for file_path in utils.iter_files(class_folder):
                     if self.is_file_integral(file_path):
-                        paths_labels_groups = paths_labels_groups.append(
+                        examples = examples.append(
                             {self._path_column: file_path, self._label_column: label}, ignore_index=True, sort=False)
 
-        if paths_labels_groups is not None:
+        if examples is not None:
             if self._sequence_or_grid:
                 agg = {self._path_column: list, self._label_column: self._mode}
-                if self._group and self._group in paths_labels_groups:
+                if self._group and self._group in examples:
                     agg[self._group] = self._mode
-                paths_labels_groups = paths_labels_groups.groupby(self._sample_id, sort=False).agg(agg)
-                paths_labels_groups = paths_labels_groups.reset_index(drop=False)\
-                                                         .rename(columns={self._sample_id: 'id'})
+                examples = examples.groupby(self._sample_id, sort=False).agg(agg)
+                examples = examples.reset_index(drop=False).rename(columns={self._sample_id: 'id'})
             elif self._sample_id:
-                paths_labels_groups = paths_labels_groups.rename(columns={self._sample_id: 'id'})
+                examples = examples.rename(columns={self._sample_id: 'id'})
             else:
-                paths_labels_groups['id'] = paths_labels_groups[self._path_column].apply(str)\
+                examples['id'] = examples[self._path_column].apply(str)\
                                                 .str.rsplit('/', n=1, expand=True)[1]\
                                                 .str.rsplit('.', n=1, expand=True)[0]
             if self._with_shuffle:
-                paths_labels_groups = paths_labels_groups.sample(frac=1, replace=False, axis=0, random_state=self._seed)
-            ids = paths_labels_groups['id']
-            file_paths = paths_labels_groups[self._path_column].to_list()
-            labels = paths_labels_groups[self._label_column].to_list()
+                examples = examples.sample(frac=1, replace=False, axis=0, random_state=self._seed)
             if self._group and metadata is not None and \
                     all(c in metadata.columns for c in [self._path_column, self._group]):
                 groups = metadata.set_index(self._path_column) \
-                    .loc[file_paths, self._group]
+                    .loc[examples[self._path_column].values, self._group]
 
-        return ids, file_paths, labels, groups
+        return examples, groups
 
     def is_file_integral(self, file_path: Path) -> bool:
         return True
 
-    def _iter_dataset(self, ids: List[str], file_paths: Union[List[Path], List[List[Path]]],
-                      labels: List[str], groups: List[int] = None):
-        ids = np.array(ids)
-        file_paths = np.array(file_paths)
-        labels = np.array(labels)
+    def _iter_dataset(self, examples: pd.DataFrame, groups: List[int] = None):
+        file_paths = examples[self._path_column].values
+        labels = examples[self._label_column].values
         if groups is not None:
             groups = np.array(groups)
         if self._n_splits > 1:
             for p, (_, indices) in enumerate(self._split(file_paths, labels, groups)):
-                yield self._iter_partition(ids[indices], file_paths[indices], labels[indices])
+                yield self._iter_partition(examples.iloc[indices])
         else:
             np.random.seed(self._seed)
             indices = np.random.choice(np.arange(len(file_paths)), len(file_paths), replace=False)
-            yield self._iter_partition(ids[indices], file_paths[indices], labels[indices])
+            yield self._iter_partition(examples.iloc[indices])
 
-    @staticmethod
-    def _iter_partition(ids: np.array, file_paths: np.array, labels: np.array):
-        for id, paths, label in zip(ids, file_paths, labels):
-            yield id, paths, label
+    def _iter_partition(self, examples: pd.DataFrame):
+        for _, example in examples.iterrows():
+            if self._additional_columns:
+                kwargs = example[self._additional_columns].to_dict()
+            else:
+                kwargs = {}
+            yield example['id'], example[self._path_column], example[self._label_column], kwargs
 
     def _split(self, file_paths: np.array, labels: np.array, groups: np.array = None):
         if self._with_stratify:

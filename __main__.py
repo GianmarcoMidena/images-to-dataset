@@ -24,6 +24,7 @@ parser.add_argument("-sample_id", type=str, required=False)
 parser.add_argument("-metadata", type=Path, required=False)
 parser.add_argument("-path_column", type=str, default="path")
 parser.add_argument("-label_column", type=str, default="label")
+parser.add_argument("-additional_columns", action="append", required=False)
 parser.add_argument("-seed", type=int, required=False)
 args = parser.parse_args()
 
@@ -33,7 +34,7 @@ partitions = ImageDatasetBuilder(data_root=args.input_data_root, n_splits=n_spli
                                  with_shuffle=args.shuffle, with_stratify=args.stratify, group=args.group,
                                  metadata=args.metadata, path_column=args.path_column, label_column=args.label_column,
                                  sequence_or_grid=args.sequence or args.grid, sample_id=args.sample_id,
-                                 seed=args.seed).build()
+                                 additional_columns=args.additional_columns, seed=args.seed).build()
 
 if args.output_format == 'csv':
     CSVWriter(n_splits=n_splits, output_dir=args.output_dir, output_file_name=args.output_file_name).write(partitions)

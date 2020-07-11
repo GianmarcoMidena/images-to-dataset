@@ -32,6 +32,7 @@ python images_to_dataset \
     -sample_id "sample_id" \ # OPTIONAL
     -path_column "path" \ # OPTIONAL
     -label_column "label" \ # OPTIONAL
+    -additional_columns "col_x" "col_y" ... "col_t" \ # OPTIONAL
     -seed 3 # OPTIONAL
 ```
 where: 

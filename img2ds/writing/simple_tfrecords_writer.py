@@ -5,10 +5,10 @@ from img2ds.writing import TFRecordsWriter, SimpleDatasetWriter
 
 
 class SimpleTFRecordsWriter(TFRecordsWriter, SimpleDatasetWriter):
-    def _write_example(self, id: str, path: Path, label: str):
-        example = self._make_example(id, path, label)
+    def _write_example(self, id: str, path: Path, label: str, **kwargs):
+        example = self._make_example(id, path, label, **kwargs)
         self._writer.write(example)
 
     @abstractmethod
-    def _make_example(self, id: str, path: Path, label: str):
+    def _make_example(self, id: str, path: Path, label: str, **kwargs):
         ...

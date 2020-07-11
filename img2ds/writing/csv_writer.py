@@ -11,8 +11,9 @@ class CSVWriter(SimpleDatasetWriter):
         self._data.to_csv(output_path, index=False)
         self._data = None
 
-    def _write_example(self, id: str, path: Path, label: str):
-        self._data = self._data.append({'id': id, 'path': path, 'label': label}, ignore_index=True, sort=False)
+    def _write_example(self, id: str, path: Path, label: str, **kwargs):
+        self._data = self._data.append({'id': id, 'path': path, 'label': label, **kwargs},
+                                       ignore_index=True, sort=False)
 
     def _get_extension(self) -> str:
         return "csv"
