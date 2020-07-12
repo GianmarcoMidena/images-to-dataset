@@ -7,10 +7,10 @@ from img2ds.writing import TFRecordsWriter, SequenceDatasetWriter
 
 
 class SequenceTFRecordsWriter(TFRecordsWriter, SequenceDatasetWriter):
-    def _write_example(self, id: str, paths: List[Path], label: str, **kwargs):
-        example = self._make_example(id, paths, label, **kwargs)
+    def _write_example(self, id: str, paths: List[Path], **kwargs):
+        example = self._make_example(id, paths, **kwargs)
         self._writer.write(example)
 
     @abstractmethod
-    def _make_example(self, id: str, paths: List[Path], label: str, **kwargs):
+    def _make_example(self, id: str, paths: List[Path], **kwargs):
         ...

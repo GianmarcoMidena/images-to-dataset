@@ -9,10 +9,10 @@ from img2ds.writing import feature_utils as utils, SequenceTFRecordsWriter
 
 
 class GridImageTFRecordsWriter(SequenceTFRecordsWriter):
-    def _make_example(self, id: str, paths: List[Path], label: str, **kwargs):
-        return self._serialize_example(id, paths, label, **kwargs)
+    def _make_example(self, id: str, paths: List[Path], **kwargs):
+        return self._serialize_example(id, paths, **kwargs)
 
-    def _serialize_example(self, id: str, paths: List[Path], label: str, **kwargs) -> str:
+    def _serialize_example(self, id: str, paths: List[Path], **kwargs) -> str:
         """
          Creates a tf.Example message ready to be written to a file.
          """
@@ -36,18 +36,23 @@ class GridImageTFRecordsWriter(SequenceTFRecordsWriter):
 
         context = {
             'id': utils.bytes_feature(tf.compat.as_bytes(id)),
-            'label': utils.bytes_feature(tf.compat.as_bytes(label)),
             'n_cells_per_row': utils.int64_feature(n_cells_per_row),
             'n_cells_per_col': utils.int64_feature(n_cells_per_col),
         }
 
-        for k, v in kwargs.items():
-            if isinstance(v, int) or isinstance(v, bool):
-                context[k] = utils.int64_feature(v)
-            elif isinstance(v, str):
-                context[k] = utils.bytes_feature(tf.compat.as_bytes(v))
-            elif isinstance(v, float):
-                context[k] = utils.float_feature(v)
+        if "global_label" in kwargs:
+            context["label"] = utils.bytes_feature(tf.compat.as_bytes(kwargs["global_label"]))
+        elif "label" in kwargs:
+            context["label"] = utils.bytes_feature(tf.compat.as_bytes(kwargs["label"]))
+
+        for key in set(kwargs.keys()).difference({'label', 'global_label', 'local_label'}):
+            value = kwargs[key]
+            if isinstance(value, int) or isinstance(value, bool):
+                context[key] = utils.int64_feature(value)
+            elif isinstance(value, str):
+                context[key] = utils.bytes_feature(tf.compat.as_bytes(value))
+            elif isinstance(value, float):
+                context[key] = utils.float_feature(value)
 
         feature_list = {
             'row_idx': utils.int64_feature_list(row_indices),
@@ -57,6 +62,9 @@ class GridImageTFRecordsWriter(SequenceTFRecordsWriter):
             'depth': utils.int64_feature_list(depths),
             'image_raw': utils.bytes_feature_list(image_bytes),
         }
+
+        if "local_label" in kwargs:
+            feature_list["label"] = utils.bytes_feature_list([tf.compat.as_bytes(l) for l in kwargs["local_label"]])
 
         # Create a Features message using tf.train.SequenceExample.
         example_proto = tf.train.SequenceExample(context=tf.train.Features(feature=context),

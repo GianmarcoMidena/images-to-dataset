@@ -9,11 +9,11 @@ from img2ds.writing.simple_tfrecords_writer import SimpleTFRecordsWriter
 
 
 class ImageTFRecordsWriter(SimpleTFRecordsWriter):
-    def _make_example(self, id: str, path: Path, label: str, **kwargs):
+    def _make_example(self, id: str, path: Path, **kwargs):
         image = Image.open(path)
-        return self._serialize_example(id, image, label, **kwargs)
+        return self._serialize_example(id, image, **kwargs)
 
-    def _serialize_example(self, id: str, image: PIL.Image.Image, label: str, **kwargs) -> str:
+    def _serialize_example(self, id: str, image: PIL.Image.Image, **kwargs) -> str:
         """
          Creates a tf.Example message ready to be written to a file.
         """
@@ -25,20 +25,23 @@ class ImageTFRecordsWriter(SimpleTFRecordsWriter):
         image_bytes = image.tobytes()
         feature = {
             'id': utils.bytes_feature(tf.compat.as_bytes(id)),
-            'label': utils.bytes_feature(tf.compat.as_bytes(label)),
             'image_raw': utils.bytes_feature(image_bytes),
             'height': utils.int64_feature(height),
             'width': utils.int64_feature(width),
             'depth': utils.int64_feature(depth),
         }
 
-        for k, v in kwargs.items():
-            if isinstance(v, int) or isinstance(v, bool):
-                feature[k] = utils.int64_feature(v)
-            elif isinstance(v, str):
-                feature[k] = utils.bytes_feature(tf.compat.as_bytes(v))
-            elif isinstance(v, float):
-                feature[k] = utils.float_feature(v)
+        if "label" in kwargs:
+            feature["label"] = utils.bytes_feature(tf.compat.as_bytes(kwargs["label"]))
+
+        for key in set(kwargs.keys()).difference({'label'}):
+            value = kwargs[key]
+            if isinstance(value, int) or isinstance(value, bool):
+                feature[key] = utils.int64_feature(value)
+            elif isinstance(value, str):
+                feature[key] = utils.bytes_feature(tf.compat.as_bytes(value))
+            elif isinstance(value, float):
+                feature[key] = utils.float_feature(value)
 
         # Create a Features message using tf.train.Example.
         example_proto = tf.train.Example(features=tf.train.Features(feature=feature))

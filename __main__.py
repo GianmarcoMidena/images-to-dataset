@@ -24,6 +24,8 @@ parser.add_argument("-sample_id", type=str, required=False)
 parser.add_argument("-metadata", type=Path, required=False)
 parser.add_argument("-path_column", type=str, default="path")
 parser.add_argument("-label_column", type=str, default="label")
+parser.add_argument("-global_label_column", type=str, required=False)
+parser.add_argument("-local_label_column", type=str, required=False)
 parser.add_argument("-additional_columns", action="append", required=False)
 parser.add_argument("-seed", type=int, required=False)
 args = parser.parse_args()
@@ -32,7 +34,10 @@ n_splits = args.n_splits
 
 partitions = ImageDatasetBuilder(data_root=args.input_data_root, n_splits=n_splits,
                                  with_shuffle=args.shuffle, with_stratify=args.stratify, group=args.group,
-                                 metadata=args.metadata, path_column=args.path_column, label_column=args.label_column,
+                                 metadata=args.metadata, path_column=args.path_column,
+                                 label_column=args.label_column,
+                                 local_label_column=args.local_label_column,
+                                 global_label_column=args.global_label_column,
                                  sequence_or_grid=args.sequence or args.grid, sample_id=args.sample_id,
                                  additional_columns=args.additional_columns, seed=args.seed).build()
 
