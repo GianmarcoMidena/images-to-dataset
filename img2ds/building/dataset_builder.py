@@ -63,15 +63,15 @@ class DatasetBuilder:
                         .isdisjoint(metadata.columns):
                     if {self._local_label_column, self._global_label_column}.isdisjoint(metadata.columns):
                         metadata[self._label_column] = metadata[self._label_column].apply(str)
-                        examples[self._label_column] = metadata[self._label_column]
+                        examples['label'] = metadata[self._label_column]
                     else:
                         if self._local_label_column in metadata:
                             metadata[self._local_label_column] = metadata[self._local_label_column].apply(str)
-                            examples[self._local_label_column] = metadata[self._local_label_column]
+                            examples['local_label'] = metadata[self._local_label_column]
 
                         if self._global_label_column in metadata:
                             metadata[self._global_label_column] = metadata[self._global_label_column].apply(str)
-                            examples[self._global_label_column] = metadata[self._global_label_column]
+                            examples['global_label'] = metadata[self._global_label_column]
 
         if examples is None and self._data_root:
             examples = pd.DataFrame()
@@ -80,19 +80,19 @@ class DatasetBuilder:
                 for file_path in utils.iter_files(class_folder):
                     if self.check_data_integrity(file_path):
                         examples = examples.append(
-                            {self._path_column: file_path, self._label_column: label}, ignore_index=True, sort=False)
+                            {self._path_column: file_path, 'label': label}, ignore_index=True, sort=False)
 
         if examples is not None:
             if self._sequence_or_grid:
                 agg = {self._path_column: list}
 
-                if self._global_label_column in examples:
-                    agg[self._global_label_column] = self._mode
-                elif self._label_column in examples:
-                    agg[self._label_column] = self._mode
+                if 'global_label' in examples:
+                    agg['global_label'] = self._mode
+                elif 'label' in examples:
+                    agg['label'] = self._mode
 
-                if self._local_label_column in examples:
-                    agg[self._local_label_column] = list
+                if 'local_label' in examples:
+                    agg['local_label'] = list
 
                 if self._group and self._group in examples:
                     agg[self._group] = self._mode
@@ -134,14 +134,14 @@ class DatasetBuilder:
 
             kwargs = {}
 
-            if self._label_column in example:
-                kwargs['label'] = example[self._label_column]
+            if 'label' in example:
+                kwargs['label'] = example['label']
             else:
-                if self._global_label_column in example:
-                    kwargs['global_label'] = example[self._global_label_column]
+                if 'global_label' in example:
+                    kwargs['global_label'] = example['global_label']
 
-                if self._local_label_column in example:
-                    kwargs['local_label'] = example[self._local_label_column]
+                if 'local_label' in example:
+                    kwargs['local_label'] = example['local_label']
 
             if self._additional_columns:
                 kwargs.update(example[self._additional_columns].to_dict())
@@ -150,11 +150,11 @@ class DatasetBuilder:
 
     def _split(self, examples: pd.DataFrame, groups: np.array = None):
         file_paths = examples[self._path_column].values
-        if self._with_stratify and not {self._label_column, self._global_label_column}.isdisjoint(examples.columns):
-            if self._global_label_column in examples:
-                labels = examples[self._global_label_column].values
+        if self._with_stratify and not {'label', 'global_label'}.isdisjoint(examples.columns):
+            if 'global_label' in examples:
+                labels = examples['global_label'].values
             else:
-                labels = examples[self._label_column].values
+                labels = examples['label'].values
 
             if self._group and groups is not None:
                 return StratifiedGroupKFold(n_splits=self._n_splits) \
