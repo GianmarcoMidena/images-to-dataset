@@ -11,6 +11,7 @@ from img2ds.writing.grid_image_tfrecords_writer import GridImageTFRecordsWriter
 logging.basicConfig(format='%(asctime)s %(message)s', level=logging.INFO)
 parser = argparse.ArgumentParser()
 parser.add_argument("-input_data_root", type=Path, required=False)
+parser.add_argument("-input_archive_path", type=Path, required=False)
 parser.add_argument("-output_dir", type=Path, required=True, help="path to the output directory")
 parser.add_argument("-output_file_name", type=str, default="data")
 parser.add_argument("-output_format", type=str, choices=['csv', 'tfrecords'], required=True)
@@ -51,4 +52,5 @@ elif args.grid:
                              output_file_name=args.output_file_name).write(partitions)
 else:
     ImageTFRecordsWriter(n_splits=n_splits, output_dir=args.output_dir,
-                         output_file_name=args.output_file_name).write(partitions)
+                         output_file_name=args.output_file_name,
+                         input_archive_path=args.input_archive_path).write(partitions)

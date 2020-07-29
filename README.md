@@ -82,8 +82,9 @@ def _parse_image_function(example):
     label = tf.squeeze(features['label'])
     return image, label
 
-tfrecord_file_paths = glob(os.path.join('tfrecords', 'data*.tfrecords'))
-raw_image_dataset = tf.data.TFRecordDataset(tfrecord_file_paths)
+tfrecord_file_paths = glob(os.path.join('tfrecords', 'data*.tfrecords.zlib'))
+raw_image_dataset = tf.data.TFRecordDataset(tfrecord_file_paths,
+                                            compression_type="ZLIB")
 parsed_image_dataset = raw_image_dataset.map(_parse_image_function)
 
 for image, label in parsed_image_dataset.take(5):
@@ -139,8 +140,9 @@ def _parse_sequence_function(example):
     label = tf.squeeze(context_features['label'])
     return images, label
 
-tfrecord_file_paths = glob(os.path.join('tfrecords', 'data*.tfrecords'))
-raw_image_dataset = tf.data.TFRecordDataset(tfrecord_file_paths)
+tfrecord_file_paths = glob(os.path.join('tfrecords', 'data*.tfrecords.zlib'))
+raw_image_dataset = tf.data.TFRecordDataset(tfrecord_file_paths,
+                                            compression_type="ZLIB")
 parsed_seq_image_dataset = raw_image_dataset.map(_parse_sequence_function)
 
 for i, (image, label) in enumerate(parsed_seq_image_dataset.take(5)):

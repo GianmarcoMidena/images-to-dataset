@@ -49,8 +49,9 @@ class DatasetBuilder:
             if self._path_column in metadata:
                 metadata[self._path_column] = metadata[self._path_column].apply(Path)
 
-                path_existence = metadata[self._path_column].apply(Path.exists)
-                metadata = metadata.loc[path_existence]
+                #path_existence = metadata[self._path_column].apply(Path.exists)
+                #metadata = metadata.loc[path_existence]
+
                 examples = metadata[[self._path_column]]
 
                 if self._sample_id:
@@ -102,9 +103,11 @@ class DatasetBuilder:
             elif self._sample_id:
                 examples = examples.rename(columns={self._sample_id: 'id'})
             else:
-                examples['id'] = examples[self._path_column].apply(str)\
-                                                .str.rsplit('/', n=1, expand=True)[1]\
-                                                .str.rsplit('.', n=1, expand=True)[0]
+                examples['id'] = examples[self._path_column].apply(str).str.rsplit('.', n=1, expand=True)[0]
+                if examples['id'].str.contains("/").any():
+                    examples.loc[examples.str.contains("/"), 'id'] = \
+                        examples.loc[examples['id'].str.contains("/"), 'id'].str.rsplit('/', n=1, expand=True)[1]
+
             if self._with_shuffle:
                 examples = examples.sample(frac=1, replace=False, axis=0, random_state=self._seed)
             if self._group and metadata is not None and \
